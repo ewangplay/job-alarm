@@ -22,6 +22,7 @@ func (this *Alarm) Alert(desc string) error {
 }
 
 func (this *Alarm) AddMonitor(name string, start_time, stop_time time.Time, desc string) error {
+    var err error
     var monitor *Monitor
     
     monitor, ok := this.monitors[name]
@@ -29,13 +30,20 @@ func (this *Alarm) AddMonitor(name string, start_time, stop_time time.Time, desc
         return fmt.Errorf("monitor %v already exists", name)
     }
     
-    monitor = NewMonitor(name, start_time, stop_time, desc)
+    monitor = NewMonitor(name, start_time, stop_time, desc, this.cb_alarm)
+    
+    err = monitor.Start()
+    if err != nil {
+        return err
+    }
+    
     this.monitors[name] = monitor
     
     return nil
 }
 
 func (this *Alarm) RemoveMonitor(name string) error{
+    var err error
     var monitor *Monitor
     
     monitor, ok := this.monitors[name]
@@ -45,6 +53,11 @@ func (this *Alarm) RemoveMonitor(name string) error{
     
     if monitor == nil {
         return fmt.Errorf("monitor %v invalid", name)
+    }
+    
+    err = monitor.Stop()
+    if err != nil {
+        return err
     }
     
     delete(this.monitors, name)
