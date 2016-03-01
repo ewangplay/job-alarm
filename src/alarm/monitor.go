@@ -15,12 +15,12 @@ type Monitor struct {
     name string
     deadline time.Time
     alarm_msg string
-    cb_alarm func(string)error
+    cb_alarm func(string, string)error
     status int
     wg *sync.WaitGroup
 }
 
-func NewMonitor(name string, deadline time.Time, alarm_msg string, cb func(string)error) *Monitor {
+func NewMonitor(name string, alarm_msg string, deadline time.Time, cb func(string, string)error) *Monitor {
     monitor := &Monitor{}
     monitor.name = name
     monitor.deadline = deadline
@@ -53,7 +53,7 @@ func (this *Monitor) Start() error {
             }
         }
 
-        return this.cb_alarm(this.alarm_msg)
+        return this.cb_alarm(this.name, this.alarm_msg)
     }()
     
     return nil

@@ -10,8 +10,8 @@ import (
 var t_alarm *Alarm
 
 func TestMain(m *testing.M) {
-	f := func(desc string) error {
-		fmt.Println(desc)
+	f := func(module, alarm_msg string) error {
+		fmt.Printf("%v: %v\n", module, alarm_msg)
 		return nil
 	}
 
@@ -21,19 +21,29 @@ func TestMain(m *testing.M) {
 }
 
 func TestAlert(t *testing.T) {
-	t_alarm.Alert("保存数据库失败")
+	t_alarm.Alert("module1", "保存数据库失败")
 }
 
-func TestMonitor(t *testing.T) {
+func TestDeadlineAlert(t *testing.T) {
 	deadline := time.Now().Add(time.Second * 2)
-	err := t_alarm.SetDeadlineAlert("test", deadline, "用户数据没有提交")
+	err := t_alarm.SetDeadlineAlert("module2", "用户数据没有提交", deadline)
 	if err != nil {
 		t.Errorf("set deadline alert fail: %v", err)
 	}
 
-	time.Sleep(time.Second * 4)
+	time.Sleep(time.Second * 3)
+}
 
-	err = t_alarm.CancelDeadlineAlert("test")
+func TestCancelDeadlineAlert(t *testing.T) {
+	deadline := time.Now().Add(time.Second * 2)
+	err := t_alarm.SetDeadlineAlert("module3", "用户数据没有提交", deadline)
+	if err != nil {
+		t.Errorf("set deadline alert fail: %v", err)
+	}
+
+	time.Sleep(time.Second * 1)
+
+	err = t_alarm.CancelDeadlineAlert("module3")
 	if err != nil {
 		t.Errorf("cancel deadline alert fail: %v", err)
 	}

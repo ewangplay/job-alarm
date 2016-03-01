@@ -6,22 +6,22 @@ import (
 )
 
 type Alarm struct {
-	cb_alarm func(string) error
+	cb_alarm func(string, string) error
 	monitors map[string]*Monitor
 }
 
-func NewAlarm(cb func(alarm_msg string) error) *Alarm {
+func NewAlarm(cb func(string, string) error) *Alarm {
 	alarm := &Alarm{}
 	alarm.cb_alarm = cb
 	alarm.monitors = make(map[string]*Monitor, 0)
 	return alarm
 }
 
-func (this *Alarm) Alert(alarm_msg string) error {
-	return this.cb_alarm(alarm_msg)
+func (this *Alarm) Alert(module, alarm_msg string) error {
+	return this.cb_alarm(module, alarm_msg)
 }
 
-func (this *Alarm) SetDeadlineAlert(module string, deadline time.Time, alarm_msg string) error {
+func (this *Alarm) SetDeadlineAlert(module string, alarm_msg string, deadline time.Time) error {
 	var err error
 	var monitor *Monitor
 
@@ -30,7 +30,7 @@ func (this *Alarm) SetDeadlineAlert(module string, deadline time.Time, alarm_msg
 		return fmt.Errorf("monitor %v already exists", module)
 	}
 
-	monitor = NewMonitor(module, deadline, alarm_msg, this.cb_alarm)
+	monitor = NewMonitor(module, alarm_msg, deadline, this.cb_alarm)
 
 	err = monitor.Start()
 	if err != nil {
