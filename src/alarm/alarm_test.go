@@ -26,11 +26,13 @@ func TestMonitor(t *testing.T) {
     alarm := NewAlarm(f)
     
     start_time := time.Now() 
-    stop_time := start_time.Add(24 * time.Hour)
-    err := alarm.AddMonitor("test", start_time, stop_time, "用户数据没有提交")
+    stop_time := start_time.Add(time.Second * 20)
+    err := alarm.AddMonitor("test", stop_time, "用户数据没有提交")
     if err != nil {
         t.Errorf("add monitor fail: %v", err)
     }
+    
+    time.Sleep(time.Second * 21)
     
     err = alarm.RemoveMonitor("test")
     if err != nil {

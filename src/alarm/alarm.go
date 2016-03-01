@@ -21,7 +21,7 @@ func (this *Alarm) Alert(desc string) error {
     return this.cb_alarm(desc)
 }
 
-func (this *Alarm) AddMonitor(name string, start_time, stop_time time.Time, desc string) error {
+func (this *Alarm) AddMonitor(name string, stop_time time.Time, desc string) error {
     var err error
     var monitor *Monitor
     
@@ -30,7 +30,7 @@ func (this *Alarm) AddMonitor(name string, start_time, stop_time time.Time, desc
         return fmt.Errorf("monitor %v already exists", name)
     }
     
-    monitor = NewMonitor(name, start_time, stop_time, desc, this.cb_alarm)
+    monitor = NewMonitor(name, stop_time, desc, this.cb_alarm)
     
     err = monitor.Start()
     if err != nil {
