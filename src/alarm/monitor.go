@@ -13,17 +13,15 @@ const (
 
 type Monitor struct {
     name string
-    deadline time.Time
     alarm_msg string
     cb_alarm func(string, string)error
     status int
     wg *sync.WaitGroup
 }
 
-func NewMonitor(name string, alarm_msg string, deadline time.Time, cb func(string, string)error) *Monitor {
+func NewMonitor(name string, alarm_msg string, cb func(string, string)error) *Monitor {
     monitor := &Monitor{}
     monitor.name = name
-    monitor.deadline = deadline
     monitor.alarm_msg = alarm_msg 
     monitor.cb_alarm = cb
     monitor.status = STATUS_INIT
@@ -31,7 +29,7 @@ func NewMonitor(name string, alarm_msg string, deadline time.Time, cb func(strin
     return monitor
 }
 
-func (this *Monitor) Start() error {
+func (this *Monitor) Start(deadline time.Time) error {
     this.status = STATUS_RUNNING
     this.wg.Add(1)
     
@@ -44,7 +42,7 @@ func (this *Monitor) Start() error {
             }
             
             now := time.Now().Unix()
-            if now < this.deadline.Unix() {
+            if now < deadline.Unix() {
                 time.Sleep(time.Second)
             } else {
                 this.status = STATUS_INIT
@@ -66,4 +64,8 @@ func (this *Monitor) Stop() error {
     }
 
     return nil
+}
+
+func (this *Monitor) IsEnabled() bool {
+    return this.status == STATUS_RUNNING
 }

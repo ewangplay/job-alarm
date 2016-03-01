@@ -22,29 +22,54 @@ func TestMain(m *testing.M) {
 
 func TestAlert(t *testing.T) {
 	t_alarm.Alert("module1", "保存数据库失败")
+    t_alarm.PrintMonitors()
 }
 
-func TestDeadlineAlert(t *testing.T) {
-	deadline := time.Now().Add(time.Second * 2)
-	err := t_alarm.SetDeadlineAlert("module2", "用户数据没有提交", deadline)
+func TestAddDeadlineAlert(t *testing.T) {
+	err := t_alarm.AddDeadlineAlert("module2", "用户数据没有提交")
 	if err != nil {
-		t.Errorf("set deadline alert fail: %v", err)
+		t.Errorf("add deadline alert fail: %v", err)
 	}
+    t_alarm.PrintMonitors()
+}
+
+func TestEnableDeadlineAlert1(t *testing.T) {
+	deadline := time.Now().Add(time.Second * 2)
+	err := t_alarm.EnableDeadlineAlert("module2", deadline)
+	if err != nil {
+		t.Errorf("enable deadline alert fail: %v", err)
+	}
+
+    t_alarm.PrintMonitors()
 
 	time.Sleep(time.Second * 3)
 }
 
-func TestCancelDeadlineAlert(t *testing.T) {
-	deadline := time.Now().Add(time.Second * 2)
-	err := t_alarm.SetDeadlineAlert("module3", "用户数据没有提交", deadline)
+func TestEnableDeadlineAlert2(t *testing.T) {
+	deadline := time.Now().Add(time.Second * 3)
+	err := t_alarm.EnableDeadlineAlert("module2", deadline)
 	if err != nil {
-		t.Errorf("set deadline alert fail: %v", err)
+		t.Errorf("enable deadline alert fail: %v", err)
 	}
 
-	time.Sleep(time.Second * 1)
+    t_alarm.PrintMonitors()
 
-	err = t_alarm.CancelDeadlineAlert("module3")
-	if err != nil {
-		t.Errorf("cancel deadline alert fail: %v", err)
-	}
+	time.Sleep(time.Second * 2)
 }
+
+func TestDisableDeadlineAlert(t *testing.T) {
+	err := t_alarm.DisableDeadlineAlert("module2")
+	if err != nil {
+		t.Errorf("disable deadline alert fail: %v", err)
+	}
+    t_alarm.PrintMonitors()
+}
+
+func TestRemoveDeadlineAlert(t *testing.T) {
+	err := t_alarm.RemoveDeadlineAlert("module2")
+	if err != nil {
+		t.Errorf("remove deadline alert fail: %v", err)
+	}
+    t_alarm.PrintMonitors()
+}
+

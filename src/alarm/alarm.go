@@ -27,12 +27,14 @@ func (this *Alarm) SetDeadlineAlert(module string, alarm_msg string, deadline ti
 
 	monitor, ok := this.monitors[module]
 	if ok && monitor != nil {
-		return fmt.Errorf("monitor %v already exists", module)
+        if monitor.IsEnabled() {
+            monitor.Stop()
+        }
 	}
 
-	monitor = NewMonitor(module, alarm_msg, deadline, this.cb_alarm)
+	monitor = NewMonitor(module, alarm_msg, this.cb_alarm)
 
-	err = monitor.Start()
+	err = monitor.Start(deadline)
 	if err != nil {
 		return err
 	}
@@ -42,7 +44,7 @@ func (this *Alarm) SetDeadlineAlert(module string, alarm_msg string, deadline ti
 	return nil
 }
 
-func (this *Alarm) CancelDeadlineAlert(module string) error {
+func (this *Alarm) UnsetDeadlineAlert(module string) error {
 	var err error
 	var monitor *Monitor
 
@@ -63,4 +65,76 @@ func (this *Alarm) CancelDeadlineAlert(module string) error {
 	delete(this.monitors, module)
 
 	return nil
+}
+
+func (this *Alarm) AddDeadlineAlert(module, alarm_msg string) error {
+	var monitor *Monitor
+
+	monitor, ok := this.monitors[module]
+	if ok && monitor != nil {
+        return fmt.Errorf("monitor %v already exists", module)
+	}
+
+	monitor = NewMonitor(module, alarm_msg, this.cb_alarm)
+
+	this.monitors[module] = monitor
+
+    return nil 
+}
+
+func (this *Alarm) EnableDeadlineAlert(module string, deadline time.Time) error {
+    var monitor *Monitor
+
+	monitor, ok := this.monitors[module]
+	if !ok || monitor == nil {
+        return fmt.Errorf("monitor %v not found", module)
+	}
+
+    if monitor.IsEnabled() {
+        monitor.Stop()
+    }
+
+    return monitor.Start(deadline)
+}
+
+func (this *Alarm) DisableDeadlineAlert(module string) error {
+    var monitor *Monitor
+
+	monitor, ok := this.monitors[module]
+	if !ok || monitor == nil {
+        return fmt.Errorf("monitor %v not found", module)
+	}
+
+    if monitor.IsEnabled() {
+        monitor.Stop()
+    }
+
+    return nil 
+}
+
+func (this *Alarm) RemoveDeadlineAlert(module string) error {
+	var monitor *Monitor
+
+	monitor, ok := this.monitors[module]
+	if !ok || monitor == nil {
+		return fmt.Errorf("monitor %v not found", module)
+	}
+
+    if monitor.IsEnabled() {
+        monitor.Stop()
+    }
+
+	delete(this.monitors, module)
+
+    return nil 
+}
+
+func (this *Alarm) PrintMonitors() {
+    for module, monitor := range this.monitors {
+        fmt.Printf(">> %v\n", module)
+        fmt.Println(">> ===============================")
+        fmt.Printf(">> Alarm Msg: %v\n", monitor.alarm_msg)
+        fmt.Printf(">> Status: %v\n", monitor.status)
+        fmt.Println()
+    }
 }
