@@ -73,3 +73,22 @@ func TestRemoveDeadlineAlert(t *testing.T) {
     t_alarm.PrintMonitors()
 }
 
+func TestSetDeadlineAlert(t *testing.T) {
+	deadline := time.Now().Add(time.Second * 3)
+	err := t_alarm.SetDeadlineAlert("module3", "订单数据没有提交", deadline)
+	if err != nil {
+		t.Errorf("set deadline alert fail: %v", err)
+	}
+
+	time.Sleep(time.Second * 2)
+    t_alarm.PrintMonitors()
+}
+
+func TestUnsetDeadlineAlert(t *testing.T) {
+	err := t_alarm.UnsetDeadlineAlert("module3")
+	if err != nil {
+		t.Errorf("unset deadline alert fail: %v", err)
+	}
+
+    t_alarm.PrintMonitors()
+}
