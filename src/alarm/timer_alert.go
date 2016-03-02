@@ -38,7 +38,7 @@ func (this *TimerAlert) Enable() error {
 
             now := time.Now()
 
-            if this.timer.Year() != 0 && this.timer.Month() != 0 && this.timer.Day() != 0 {
+            if this.timer.Year() > 0 && this.timer.Month() > 0 && this.timer.Day() > 0 {
                 if now.Year() < this.timer.Year() {
                     time.Sleep(time.Second)
                     continue
@@ -55,21 +55,21 @@ func (this *TimerAlert) Enable() error {
                 }
             }
 
-            if this.timer.Hour() != 0 {
+            if this.timer.Hour() > 0 {
                 if now.Hour() < this.timer.Hour() {
                     time.Sleep(time.Second)
                     continue
                 }
             }
 
-            if this.timer.Minute() != 0 {
+            if this.timer.Minute() > 0 {
                 if now.Minute() < this.timer.Minute() {
                     time.Sleep(time.Second)
                     continue
                 }
             }
 
-            if this.timer.Second() != 0 {
+            if this.timer.Second() > 0 {
                 if now.Second() < this.timer.Second() {
                     time.Sleep(time.Second)
                     continue
