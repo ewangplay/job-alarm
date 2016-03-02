@@ -129,6 +129,30 @@ func (this *Alarm) RemoveDeadlineAlert(module string) error {
     return nil 
 }
 
+func (this *Alarm) SetTimerAlert(module, alarm_msg string, timer time.Time) error {
+    return nil
+}
+
+func (this *Alarm) UnsetTimerAlert(module string) error {
+    return nil
+}
+
+func (this *Alarm) AddTimerAlert(module, alarm_msg string, timer time.Time) error {
+    return nil
+}
+
+func (this *Alarm) EnableTimerAlert(module string) error {
+    return nil
+}
+
+func (this *Alarm) DisableTimerAlert(module string) error {
+    return nil 
+}
+
+func (this *Alarm) RemoveTimerAlert(module string) error {
+    return nil
+}
+
 func (this *Alarm) PrintMonitors() {
     for module, monitor := range this.monitors {
         fmt.Printf(">> %v\n", module)
