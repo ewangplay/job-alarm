@@ -22,75 +22,84 @@ func TestMain(m *testing.M) {
 
 func TestAlert(t *testing.T) {
 	t_alarm.Alert("module1", "保存数据库失败")
-	t_alarm.PrintMonitors()
 }
 
 func TestAddDeadlineAlert(t *testing.T) {
-	err := t_alarm.AddDeadlineAlert("module2", "用户数据没有提交")
+	duration := time.Second * 2
+	err := t_alarm.AddDeadlineAlert("module2", "用户数据没有提交", duration)
 	if err != nil {
 		t.Errorf("add deadline alert fail: %v", err)
 	}
-	t_alarm.PrintMonitors()
+
+    status := t_alarm.GetAlertStatus("module2")
+    if status != ALERT_STATUS_INIT {
+		t.Errorf("module2 alert's status should be INIT")
+    }
 }
 
-func TestEnableDeadlineAlert1(t *testing.T) {
-	deadline := time.Now().Add(time.Second * 2)
-	err := t_alarm.EnableDeadlineAlert("module2", deadline)
+func TestEnableDeadlineAlert(t *testing.T) {
+	err := t_alarm.EnableAlert("module2")
 	if err != nil {
 		t.Errorf("enable deadline alert fail: %v", err)
 	}
 
-	t_alarm.PrintMonitors()
+    status := t_alarm.GetAlertStatus("module2")
+    if status != ALERT_STATUS_ENABLE {
+		t.Errorf("module2 alert's status should be ENABLE")
+    }
 
 	time.Sleep(time.Second * 3)
 }
 
-func TestEnableDeadlineAlert2(t *testing.T) {
-	deadline := time.Now().Add(time.Second * 3)
-	err := t_alarm.EnableDeadlineAlert("module2", deadline)
-	if err != nil {
-		t.Errorf("enable deadline alert fail: %v", err)
-	}
-
-	t_alarm.PrintMonitors()
-
-	time.Sleep(time.Second * 2)
-}
-
 func TestDisableDeadlineAlert(t *testing.T) {
-	err := t_alarm.DisableDeadlineAlert("module2")
+	err := t_alarm.DisableAlert("module2")
 	if err != nil {
 		t.Errorf("disable deadline alert fail: %v", err)
 	}
-	t_alarm.PrintMonitors()
+
+    status := t_alarm.GetAlertStatus("module2")
+    if status != ALERT_STATUS_DISABLE {
+		t.Errorf("module2 alert's status should be DISABLE")
+    }
 }
 
 func TestRemoveDeadlineAlert(t *testing.T) {
-	err := t_alarm.RemoveDeadlineAlert("module2")
+	err := t_alarm.RemoveAlert("module2")
 	if err != nil {
 		t.Errorf("remove deadline alert fail: %v", err)
 	}
-	t_alarm.PrintMonitors()
+
+    status := t_alarm.GetAlertStatus("module2")
+    if status != ALERT_STATUS_NONE {
+		t.Errorf("module2 alert's status should be NONE")
+    }
 }
 
 func TestSetDeadlineAlert(t *testing.T) {
-	deadline := time.Now().Add(time.Second * 3)
-	err := t_alarm.SetDeadlineAlert("module3", "订单数据没有提交", deadline)
+	duration := time.Second * 3
+	err := t_alarm.SetDeadlineAlert("module3", "订单数据没有提交", duration)
 	if err != nil {
 		t.Errorf("set deadline alert fail: %v", err)
 	}
 
+    status := t_alarm.GetAlertStatus("module3")
+    if status != ALERT_STATUS_ENABLE {
+		t.Errorf("module2 alert's status should be ENABLE")
+    }
+
 	time.Sleep(time.Second * 2)
-	t_alarm.PrintMonitors()
 }
 
 func TestUnsetDeadlineAlert(t *testing.T) {
-	err := t_alarm.UnsetDeadlineAlert("module3")
+	err := t_alarm.UnsetAlert("module3")
 	if err != nil {
 		t.Errorf("unset deadline alert fail: %v", err)
 	}
 
-	t_alarm.PrintMonitors()
+    status := t_alarm.GetAlertStatus("module3")
+    if status != ALERT_STATUS_NONE {
+		t.Errorf("module2 alert's status should be NONE")
+    }
 }
 
 func TestAddTimerAlert(t *testing.T) {
@@ -99,31 +108,47 @@ func TestAddTimerAlert(t *testing.T) {
 	if err != nil {
 		t.Errorf("add timer alert fail: %v", err)
 	}
-	t_alarm.PrintMonitors()
+
+    status := t_alarm.GetAlertStatus("module4")
+    if status != ALERT_STATUS_INIT {
+		t.Errorf("module2 alert's status should be INIT")
+    }
 }
 
 func TestEnableTimerAlert(t *testing.T) {
-	err := t_alarm.EnableTimerAlert("module4")
+	err := t_alarm.EnableAlert("module4")
 	if err != nil {
 		t.Errorf("enable timer alert fail: %v", err)
 	}
-	t_alarm.PrintMonitors()
+
+    status := t_alarm.GetAlertStatus("module4")
+    if status != ALERT_STATUS_ENABLE {
+		t.Errorf("module2 alert's status should be ENABLE")
+    }
 }
 
 func TestDisableTimerAlert(t *testing.T) {
-	err := t_alarm.DisableTimerAlert("module4")
+	err := t_alarm.DisableAlert("module4")
 	if err != nil {
 		t.Errorf("disable timer alert fail: %v", err)
 	}
-	t_alarm.PrintMonitors()
+
+    status := t_alarm.GetAlertStatus("module4")
+    if status != ALERT_STATUS_DISABLE {
+		t.Errorf("module2 alert's status should be DISABLE")
+    }
 }
 
 func TestRemoveTimerAlert(t *testing.T) {
-	err := t_alarm.RemoveTimerAlert("module4")
+	err := t_alarm.RemoveAlert("module4")
 	if err != nil {
 		t.Errorf("remove timer alert fail: %v", err)
 	}
-	t_alarm.PrintMonitors()
+
+    status := t_alarm.GetAlertStatus("module4")
+    if status != ALERT_STATUS_NONE {
+		t.Errorf("module2 alert's status should be NONE")
+    }
 }
 
 func TestSetTimerAlert(t *testing.T) {
@@ -132,14 +157,21 @@ func TestSetTimerAlert(t *testing.T) {
 	if err != nil {
 		t.Errorf("set timer alert fail: %v", err)
 	}
-	t_alarm.PrintMonitors()
 
+    status := t_alarm.GetAlertStatus("module5")
+    if status != ALERT_STATUS_ENABLE {
+		t.Errorf("module2 alert's status should be ENABLE")
+    }
 }
 
 func TestUnsetTimerAlert(t *testing.T) {
-	err := t_alarm.UnsetTimerAlert("module5")
+	err := t_alarm.UnsetAlert("module5")
 	if err != nil {
 		t.Errorf("set timer alert fail: %v", err)
 	}
-	t_alarm.PrintMonitors()
+
+    status := t_alarm.GetAlertStatus("module5")
+    if status != ALERT_STATUS_NONE {
+		t.Errorf("module2 alert's status should be NONE")
+    }
 }

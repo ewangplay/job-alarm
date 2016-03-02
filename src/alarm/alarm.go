@@ -5,15 +5,22 @@ import (
 	"time"
 )
 
+const (
+	ALERT_STATUS_NONE = iota
+	ALERT_STATUS_INIT
+	ALERT_STATUS_ENABLE
+	ALERT_STATUS_DISABLE
+)
+
 type Alarm struct {
 	cb_alarm func(string, string) error
-	monitors map[string]*Monitor
+	alerts map[string]Alert
 }
 
 func NewAlarm(cb func(string, string) error) *Alarm {
 	alarm := &Alarm{}
 	alarm.cb_alarm = cb
-	alarm.monitors = make(map[string]*Monitor, 0)
+	alarm.alerts = make(map[string]Alert, 0)
 	return alarm
 }
 
@@ -21,144 +28,157 @@ func (this *Alarm) Alert(module, alarm_msg string) error {
 	return this.cb_alarm(module, alarm_msg)
 }
 
-func (this *Alarm) SetDeadlineAlert(module string, alarm_msg string, deadline time.Time) error {
+func (this *Alarm) SetDeadlineAlert(module string, alarm_msg string, duration time.Duration) error {
 	var err error
-	var monitor *Monitor
+	var alert Alert
 
-	monitor, ok := this.monitors[module]
-	if ok && monitor != nil {
-        if monitor.IsEnabled() {
-            monitor.Stop()
-        }
+	alert, ok := this.alerts[module]
+	if ok && alert != nil {
+		alert.Disable()
 	}
 
-	monitor = NewMonitor(module, alarm_msg, this.cb_alarm)
+	alert = NewDeadlineAlert(module, alarm_msg, duration, this.cb_alarm)
 
-	err = monitor.Start(deadline)
+	err = alert.Enable()
 	if err != nil {
 		return err
 	}
 
-	this.monitors[module] = monitor
+	this.alerts[module] = alert
 
 	return nil
 }
 
-func (this *Alarm) UnsetDeadlineAlert(module string) error {
+func (this *Alarm) UnsetAlert(module string) error {
 	var err error
-	var monitor *Monitor
+	var alert Alert
 
-	monitor, ok := this.monitors[module]
+	alert, ok := this.alerts[module]
 	if !ok {
-		return fmt.Errorf("monitor %v not found", module)
+		return fmt.Errorf("alert %v not found", module)
 	}
 
-	if monitor == nil {
-		return fmt.Errorf("monitor %v invalid", module)
+	if alert == nil {
+		return fmt.Errorf("alert %v invalid", module)
 	}
 
-	err = monitor.Stop()
+	err = alert.Disable()
 	if err != nil {
 		return err
 	}
 
-	delete(this.monitors, module)
+	delete(this.alerts, module)
 
 	return nil
 }
 
-func (this *Alarm) AddDeadlineAlert(module, alarm_msg string) error {
-	var monitor *Monitor
+func (this *Alarm) AddDeadlineAlert(module, alarm_msg string, duration time.Duration) error {
+	var alert Alert
 
-	monitor, ok := this.monitors[module]
-	if ok && monitor != nil {
-        return fmt.Errorf("monitor %v already exists", module)
+	alert, ok := this.alerts[module]
+	if ok && alert != nil {
+		return fmt.Errorf("alert %v already exists", module)
 	}
 
-	monitor = NewMonitor(module, alarm_msg, this.cb_alarm)
+	alert = NewDeadlineAlert(module, alarm_msg, duration, this.cb_alarm)
 
-	this.monitors[module] = monitor
+	this.alerts[module] = alert
 
-    return nil 
+	return nil
 }
 
-func (this *Alarm) EnableDeadlineAlert(module string, deadline time.Time) error {
-    var monitor *Monitor
+func (this *Alarm) EnableAlert(module string) error {
+	var alert Alert
 
-	monitor, ok := this.monitors[module]
-	if !ok || monitor == nil {
-        return fmt.Errorf("monitor %v not found", module)
+	alert, ok := this.alerts[module]
+	if !ok || alert == nil {
+		return fmt.Errorf("alert %v not found", module)
 	}
 
-    if monitor.IsEnabled() {
-        monitor.Stop()
-    }
+	alert.Disable()
 
-    return monitor.Start(deadline)
+	return alert.Enable()
 }
 
-func (this *Alarm) DisableDeadlineAlert(module string) error {
-    var monitor *Monitor
+func (this *Alarm) DisableAlert(module string) error {
+	var alert Alert
 
-	monitor, ok := this.monitors[module]
-	if !ok || monitor == nil {
-        return fmt.Errorf("monitor %v not found", module)
+	alert, ok := this.alerts[module]
+	if !ok || alert == nil {
+		return fmt.Errorf("alert %v not found", module)
 	}
 
-    if monitor.IsEnabled() {
-        monitor.Stop()
-    }
+	alert.Disable()
 
-    return nil 
+	return nil
 }
 
-func (this *Alarm) RemoveDeadlineAlert(module string) error {
-	var monitor *Monitor
+func (this *Alarm) RemoveAlert(module string) error {
+	var alert Alert
 
-	monitor, ok := this.monitors[module]
-	if !ok || monitor == nil {
-		return fmt.Errorf("monitor %v not found", module)
+	alert, ok := this.alerts[module]
+	if !ok || alert == nil {
+		return fmt.Errorf("alert %v not found", module)
 	}
 
-    if monitor.IsEnabled() {
-        monitor.Stop()
-    }
+	alert.Disable()
 
-	delete(this.monitors, module)
+	delete(this.alerts, module)
 
-    return nil 
+	return nil
 }
 
 func (this *Alarm) SetTimerAlert(module, alarm_msg string, timer time.Time) error {
-    return nil
-}
+	var err error
+	var alert Alert
 
-func (this *Alarm) UnsetTimerAlert(module string) error {
-    return nil
+	alert, ok := this.alerts[module]
+	if ok && alert != nil {
+		alert.Disable()
+	}
+
+	alert = NewTimerAlert(module, alarm_msg, timer, this.cb_alarm)
+
+	err = alert.Enable()
+	if err != nil {
+		return err
+	}
+
+	this.alerts[module] = alert
+
+	return nil
 }
 
 func (this *Alarm) AddTimerAlert(module, alarm_msg string, timer time.Time) error {
-    return nil
+	var alert Alert
+
+	alert, ok := this.alerts[module]
+	if ok && alert != nil {
+		return fmt.Errorf("alert %v already exists", module)
+	}
+
+	alert = NewTimerAlert(module, alarm_msg, timer, this.cb_alarm)
+
+	this.alerts[module] = alert
+
+	return nil
 }
 
-func (this *Alarm) EnableTimerAlert(module string) error {
-    return nil
+func (this *Alarm) GetAlertStatus(module string) int {
+
+	alert, ok := this.alerts[module]
+	if !ok || alert == nil {
+		return ALERT_STATUS_NONE
+	}
+
+	return alert.GetStatus()
 }
 
-func (this *Alarm) DisableTimerAlert(module string) error {
-    return nil 
-}
-
-func (this *Alarm) RemoveTimerAlert(module string) error {
-    return nil
-}
-
-func (this *Alarm) PrintMonitors() {
-    for module, monitor := range this.monitors {
-        fmt.Printf(">> %v\n", module)
-        fmt.Println(">> ===============================")
-        fmt.Printf(">> Alarm Msg: %v\n", monitor.alarm_msg)
-        fmt.Printf(">> Status: %v\n", monitor.status)
-        fmt.Println()
-    }
+func (this *Alarm) PrintAlerts() {
+	for module, alert := range this.alerts {
+		fmt.Println(">> =====================================================")
+		fmt.Printf(">> Module: %v\n", module)
+		fmt.Printf(">> Status: %v\n", alert.GetStatus())
+		fmt.Println()
+	}
 }
