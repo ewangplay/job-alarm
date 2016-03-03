@@ -13,7 +13,7 @@ const (
 
 type Alarm struct {
 	cb_alarm func(string, string) error
-	alerts map[string]Alert
+	alerts   map[string]Alert
 }
 
 func NewAlarm(cb func(string, string) error) *Alarm {
@@ -24,7 +24,11 @@ func NewAlarm(cb func(string, string) error) *Alarm {
 }
 
 func (this *Alarm) Alert(module, alarm_msg string) error {
-	return this.cb_alarm(module, alarm_msg)
+	go func(module, msg string) error {
+		return this.cb_alarm(module, msg)
+	}(module, alarm_msg)
+
+    return nil
 }
 
 func (this *Alarm) AddAlert(module string, alert Alert) error {
